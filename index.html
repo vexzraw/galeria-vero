@@ -122,7 +122,10 @@
       border-radius: 8px; overflow: hidden;
     }
     
-    .card-front { background: #111; border: 2px solid rgba(255,255,255,0.1); }
+    .card-front { 
+      background: #111; 
+      border: 2px solid rgba(255,255,255,0.1); 
+    }
     
     .card-front img,
     .card-front video {
@@ -141,6 +144,7 @@
       align-items: center;
       padding: 2rem;
       text-align: center;
+      transform: rotateY(180deg); /* ¡Esta es la magia que faltaba! */
     }
 
     .card-back h2 {
@@ -347,7 +351,7 @@ function getCardSize(){
   if(window.innerWidth < 800){
     return {
       w: window.innerWidth * 0.85,
-      h: window.innerHeight * 0.58 // Ajustado para que el pedestal entre bien
+      h: window.innerHeight * 0.58
     };
   }
   return {
@@ -404,7 +408,12 @@ function loadArtwork(idx) {
 
 function slide(dir) {
   if (!musicReady) return;
-  if (isFlipped) { isFlipped = false; card.classList.remove('flipped'); }
+  // Si la tarjeta está volteada, la regresamos al frente antes de cambiar de obra
+  if (isFlipped) { 
+    isFlipped = false; 
+    card.classList.remove('flipped'); 
+  }
+  
   playArrow();
   const cls = dir === -1 ? 'slide-left' : 'slide-right';
   cardWrap.classList.add(cls);
@@ -444,7 +453,7 @@ window.addEventListener('resize', applyCardSize);
 // Intro
 setTimeout(() => {
   intro.classList.add('fade-out');
-}, 3500); // Un poco más rápido para que no desespere al usuario
+}, 3500);
 
 applyCardSize();
 loadArtwork(0);
