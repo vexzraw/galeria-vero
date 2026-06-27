@@ -438,7 +438,7 @@ function playArrow() {
 function startMusic() {
   if (!musicReady) {
     musicReady = true;
-    bgMusic.volume = 100;
+    bgMusic.volume = 1.0;
     bgMusic.play().catch(() => {});
   }
 }
