@@ -19,17 +19,19 @@
       width: 100vw;
     }
 
-    /* ─── INTRO ─── */
+    /* ─── INTRODUCCIÓN ─── */
     #intro {
       position: fixed; inset: 0; z-index: 1000;
       background: #000000;
       display: flex; align-items: center; justify-content: center;
+      /* Animación segura y compatible con todos los móviles */
+      transition: opacity 1.2s ease, visibility 1.2s ease;
     }
-    #intro.fade-out { animation: introFadeOut 1.2s forwards; }
     
-    @keyframes introFadeOut {
-      0%   { opacity: 1; }
-      100% { opacity: 0; pointer-events: none; display: none; }
+    #intro.fade-out { 
+      opacity: 0; 
+      visibility: hidden;
+      pointer-events: none; 
     }
     
     #flash {
@@ -373,7 +375,7 @@ const intro     = document.getElementById('intro');
 
 let current = 0;
 let isFlipped = false;
-let audioStarted = false; // Bandera para asegurarnos de que la música no intente reiniciarse si ya suena
+let audioStarted = false;
 
 function applyCardSize() {
   const { w, h } = getCardSize();
@@ -406,15 +408,23 @@ function loadArtwork(idx) {
   counter.textContent  = (idx + 1) + ' / ' + ARTWORKS.length;
 }
 
-// NUEVA FUNCION DE MÚSICA LIMPIA Y SEGURA
+// CONTROL DE MÚSICA SEGURO
 function startMusic() {
   if (!audioStarted || bgMusic.paused) {
     bgMusic.volume = 1.0;
     bgMusic.play().then(() => {
       audioStarted = true;
     }).catch((err) => {
-      console.warn("Navegador bloqueó el audio, esperando otra interacción.", err);
+      console.warn("Esperando interacción para audio.", err);
     });
+  }
+}
+
+// CONTROL PARA QUITAR LA PANTALLA NEGRA DE FORMA SEGURA
+function hideIntro() {
+  if (!intro.classList.contains('fade-out')) {
+    intro.classList.add('fade-out');
+    startMusic(); // Aprovechamos para intentar iniciar la música si el usuario tocó
   }
 }
 
@@ -426,7 +436,6 @@ function slide(dir) {
     card.classList.remove('flipped'); 
   }
   
-  // Efecto de flecha
   arrowSnd.currentTime = 0;
   arrowSnd.play().catch(() => {});
   
@@ -445,20 +454,22 @@ function flipCard() {
   card.classList.toggle('flipped', isFlipped);
 }
 
-// EVENTOS DE CLIC
+// ASIGNACIÓN DE EVENTOS
 document.getElementById('btn-left').addEventListener('click', () => slide(-1));
 document.getElementById('btn-right').addEventListener('click', () => slide(1));
 card.addEventListener('click', flipCard);
 window.addEventListener('resize', applyCardSize);
 
-// Asegurar que cualquier primer clic/toque en la página active la música
-document.body.addEventListener('click', startMusic, { once: true });
-document.body.addEventListener('touchstart', startMusic, { once: true });
+// EVENTOS DE LA INTRODUCCIÓN NEGRA
+// 1. Quitar al hacer clic o tocar
+intro.addEventListener('click', hideIntro);
+intro.addEventListener('touchstart', hideIntro, { passive: true });
+// 2. Quitar automáticamente después de 3.5 segundos
+setTimeout(hideIntro, 3500);
 
-// DESAPARICIÓN DE LA INTRODUCCIÓN NEGRA
-setTimeout(() => {
-  intro.classList.add('fade-out');
-}, 1500);
+// Asegurar música en fondo global
+document.body.addEventListener('click', startMusic, { once: true });
+document.body.addEventListener('touchstart', startMusic, { once: true, passive: true });
 
 // INICIALIZACIÓN
 applyCardSize();
