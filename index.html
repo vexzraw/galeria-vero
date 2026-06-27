@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Galería de Verónica</title>
+  <link href="https://fonts.googleapis.com/css2?family=Gruppo&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root { --accent: #f5e6a3; --bg: #000; }
+
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: 'Share Tech Mono', monospace;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    /* ─── INTRO ─── */
+    #intro {
+      position: fixed; inset: 0; z-index: 1000;
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #intro.fade-out { animation: introFadeOut 1.2s forwards; }
+    @keyframes introFadeOut {
+      0%   { opacity: 1; }
+      100% { opacity: 0; pointer-events: none; }
+    }
+    #flash {
+      position: absolute; inset: 0;
+      background: #fff;
+      animation: flashAnim 0.9s ease-out forwards;
+    }
+    @keyframes flashAnim {
+      0%   { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    #intro-title {
+      font-family: 'Gruppo', cursive;
+      font-size: clamp(2rem, 7vw, 5rem);
+      color: #fff;
+      letter-spacing: 0.12em;
+      opacity: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      width: 0;
+      animation: typeIn 2.4s steps(22, end) 0.9s forwards;
+      position: relative; z-index: 1;
+    }
+    @keyframes typeIn {
+      0%   { opacity: 1; width: 0; }
+      100% { opacity: 1; width: 22ch; }
+    }
+
+    /* ─── GALLERY ─── */
+    #gallery {
+      position: relative;
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ─── SPOTLIGHT ─── */
+    #spotlight {
+      position: absolute;
+      top: -10%; left: 50%;
+      transform: translateX(-50%);
+      width: 520px; height: 110%;
+      background: radial-gradient(ellipse 38% 70% at 50% 0%,
+        rgba(245,218,120,0.22) 0%,
+        rgba(245,218,120,0.07) 45%,
+        transparent 75%);
+      pointer-events: none;
+      z-index: 0;
+      animation: spotlightSway 7s ease-in-out infinite;
+      filter: blur(18px);
+    }
+    @keyframes spotlightSway {
+      0%,100% { transform: translateX(-50%) scaleX(1);    opacity: 0.85; }
+      50%      { transform: translateX(-50%) scaleX(1.18); opacity: 1;    }
+    }
+
+    /* ─── STAGE ─── */
+    #stage {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── CARD ─── */
+    .card-scene { perspective: 1200px; }
+    #card {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.85s cubic-bezier(.4,0,.2,1);
+      cursor: pointer;
+    }
+    #card.flipped { transform: rotateY(180deg); }
+
+    .card-face {
+      position: absolute; inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: 6px; overflow: hidden;
+    }
+    .card-front { background: #111; }
+    .card-front img,
+    .card-front video {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      border-radius: 6px;
+      animation: floatArt 4s ease-in-out infinite;
+    }
+    @keyframes floatArt {
+      0%,100% { transform: translateY(0px);   }
+      50%      { transform: translateY(-10px); }
+    }
+    .card-back {
+      background: rgba(10,8,5,0.96);
+      transform: rotateY(180deg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 1.5rem 1.8rem; gap: 1rem;
+      border: 1px solid rgba(245,218,120,0.25);
+    }
+    .card-back h2 {
+      font-family: 'Gruppo', cursive;
+      font-size: clamp(1.1rem, 3vw, 1.8rem);
+      color: var(--accent);
+      text-align: center; letter-spacing: 0.06em;
+    }
+    .card-back p {
+      font-size: clamp(0.72rem, 1.8vw, 0.95rem);
+      color: #ccc; text-align: center; line-height: 1.6;
+    }
+
+    /* ─── SLIDE TRANSITION ─── */
+    #card-wrapper.slide-left  { animation: slideLeft  0.45s cubic-bezier(.4,0,.2,1); }
+    #card-wrapper.slide-right { animation: slideRight 0.45s cubic-bezier(.4,0,.2,1); }
+    @keyframes slideLeft {
+      0%   { transform: translateX(0);    opacity: 1; }
+      45%  { transform: translateX(-14%); opacity: 0; }
+      46%  { transform: translateX(14%);  opacity: 0; }
+      100% { transform: translateX(0);    opacity: 1; }
+    }
+    @keyframes slideRight {
+      0%   { transform: translateX(0);    opacity: 1; }
+      45%  { transform: translateX(14%);  opacity: 0; }
+      46%  { transform: translateX(-14%); opacity: 0; }
+      100% { transform: translateX(0);    opacity: 1; }
+    }
+
+    /* ─── PODIUM ─── */
+    #podium-wrap {
+      position: relative; z-index: 1;
+      margin-top: -4px;
+      display: flex; justify-content: center;
+    }
+    #podium-wrap svg {
+      display: block;
+      filter: drop-shadow(0 8px 28px rgba(245,218,120,0.18));
+    }
+
+    /* ─── ARROWS ─── */
+    .arrow-btn {
+      position: absolute; z-index: 10;
+      top: 50%; transform: translateY(-50%);
+      background: rgba(80,80,80,0.22);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none; cursor: pointer;
+      border-radius: 50%;
+      width: clamp(42px, 8vw, 64px);
+      height: clamp(42px, 8vw, 64px);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.3s, transform 0.2s;
+    }
+    .arrow-btn:hover {
+      background: rgba(120,110,80,0.38);
+      transform: translateY(-50%) scale(1.1);
+    }
+    .arrow-btn svg {
+      width: 38%; height: 38%;
+      stroke: rgba(200,195,185,0.85); fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round; stroke-linejoin: round;
+      filter: blur(0.4px);
+    }
+    #btn-left  { left:  clamp(8px, 4vw, 40px); }
+    #btn-right { right: clamp(8px, 4vw, 40px); }
+
+    /* ─── COUNTER + HINT ─── */
+    #counter {
+      position: absolute; bottom: clamp(10px,3vw,22px);
+      left: 50%; transform: translateX(-50%);
+      font-size: 0.72rem;
+      color: rgba(200,195,165,0.5);
+      letter-spacing: 0.18em; z-index: 5;
+    }
+    #hint {
+      position: absolute; bottom: clamp(32px,6vw,52px);
+      left: 50%; transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: rgba(200,195,165,0.35);
+      letter-spacing: 0.2em;
+      animation: pulse 2.5s ease-in-out infinite; z-index: 5;
+    }
+    @keyframes pulse { 0%,100%{opacity:.35;} 50%{opacity:.7;} }
+  </style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div id="flash"></div>
+  <div id="intro-title">Galería de Verónica</div>
+</div>
+
+<!-- GALLERY -->
+<div id="gallery">
+  <div id="spotlight"></div>
+
+  <button class="arrow-btn" id="btn-left" aria-label="Anterior">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  </button>
+
+  <div id="stage">
+    <div id="card-wrapper">
+      <div class="card-scene" id="card-scene">
+        <div id="card">
+          <div class="card-face card-front" id="card-front"></div>
+          <div class="card-face card-back" id="card-back">
+            <h2 id="art-title">Título</h2>
+            <p id="art-desc">Descripción</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="podium-wrap">
+      <svg viewBox="0 0 340 60" style="width:clamp(180px,38vw,340px)"
+           xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="pg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a2c1a"/>
+            <stop offset="100%" stop-color="#1a1208"/>
+          </linearGradient>
+          <linearGradient id="ps" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="rgba(255,220,140,0.18)"/>
+            <stop offset="100%" stop-color="rgba(255,220,140,0)"/>
+          </linearGradient>
+        </defs>
+        <rect x="10" y="18" width="320" height="36" rx="5" fill="url(#pg)"/>
+        <rect x="10" y="18" width="320" height="36" rx="5" fill="url(#ps)"/>
+        <rect x="10" y="18" width="320" height="4"  rx="3" fill="rgba(255,220,140,0.22)"/>
+        <rect x="40"  y="10" width="16" height="12" rx="3" fill="#2a1e0e"/>
+        <rect x="150" y="6"  width="16" height="16" rx="3" fill="#2a1e0e"/>
+        <rect x="284" y="10" width="16" height="12" rx="3" fill="#2a1e0e"/>
+        <line x1="30" y1="24" x2="310" y2="24" stroke="rgba(0,0,0,0.18)" stroke-width="1"/>
+        <line x1="30" y1="32" x2="310" y2="32" stroke="rgba(0,0,0,0.12)" stroke-width="1"/>
+        <line x1="30" y1="44" x2="310" y2="44" stroke="rgba(0,0,0,0.10)" stroke-width="1"/>
+      </svg>
+    </div>
+  </div>
+
+  <button class="arrow-btn" id="btn-right" aria-label="Siguiente">
+    <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+  </button>
+
+  <div id="hint">toca la imagen para ver info</div>
+  <div id="counter"></div>
+</div>
+
+<!-- AUDIO: pon tus archivos en la misma carpeta -->
+<audio id="bg-music" loop>
+  <source src="Cancion.mp3" type="audio/mpeg"/>
+</audio>
+<audio id="arrow-sound">
+  <source src="Mover.mp3" type="audio/mpeg"/>
+</audio>
+
+<script>
+/* ══════════════════════════════════════════════════
+   ★  CONFIGURA TU GALERÍA AQUÍ  ★
+   Agrega o quita objetos de este array.
+   type "image" → fotos PNG/JPG verticales
+   type "video" → videos MP4 horizontales
+══════════════════════════════════════════════════ */
+const ARTWORKS = [
+  {
+    src:   "1.jpg",
+    type:  "image",
+    title: "Mi Connor",
+    desc:  "El día que encontré a mi bebé Connor y lo adopté, era muy pequeño."
+  },
+  {
+    src:   "2.jpg",
+    type:  "image",
+    title: "Un ángel",
+    desc:  "Iluminado de gracia y amigo de lobos."
+  },
+  {
+    src:   "3.jpeg",
+    type:  "image",
+    title: "Mi única foto",
+    desc:  "El arte es mi vida."
+  },
+  {
+    src:   "4.jpg",
+    type:  "image",
+    title: "Hermano",
+    desc:  "Mi hermano cuando todavía estaban construyendo la casa."
+ },
+ {
+    src:   "5.jpg",
+    type:  "image",
+    title: "Cheri",
+    desc:  "Cheri Cheri lady."
+  }
+
+
+  // ← agrega más obras aquí con el mismo formato
+];
+/* ════════════════════════════════════════════════ */
+
+function getCardSize() {
+  const maxH = Math.min(window.innerHeight * 0.62, 520);
+  const maxW = Math.min(window.innerWidth  * 0.52, 340);
+  return { w: Math.round(maxW), h: Math.round(maxH) };
+}
+
+const card      = document.getElementById('card');
+const cardScene = document.getElementById('card-scene');
+const cardFront = document.getElementById('card-front');
+const artTitle  = document.getElementById('art-title');
+const artDesc   = document.getElementById('art-desc');
+const cardWrap  = document.getElementById('card-wrapper');
+const counter   = document.getElementById('counter');
+const bgMusic   = document.getElementById('bg-music');
+const arrowSnd  = document.getElementById('arrow-sound');
+const intro     = document.getElementById('intro');
+
+let current    = 0;
+let isFlipped  = false;
+let musicReady = false;
+
+function applyCardSize() {
+  const { w, h } = getCardSize();
+  card.style.width       = w + 'px';
+  card.style.height      = h + 'px';
+  cardScene.style.width  = w + 'px';
+  cardScene.style.height = h + 'px';
+}
+
+function buildMedia(art) {
+  cardFront.innerHTML = '';
+  if (art.type === 'video') {
+    const v = document.createElement('video');
+    v.src = art.src;
+    v.autoplay = true; v.loop = true;
+    v.muted = true; v.playsInline = true;
+    cardFront.appendChild(v);
+  } else {
+    const img = document.createElement('img');
+    img.src = art.src; img.alt = art.title;
+    cardFront.appendChild(img);
+  }
+}
+
+function loadArtwork(idx) {
+  const art = ARTWORKS[idx];
+  artTitle.textContent = art.title;
+  artDesc.textContent  = art.desc;
+  buildMedia(art);
+  counter.textContent  = (idx + 1) + ' / ' + ARTWORKS.length;
+}
+
+function slide(dir) {
+  if (!musicReady) return;
+  if (isFlipped) { isFlipped = false; card.classList.remove('flipped'); }
+  playArrow();
+  const cls = dir === -1 ? 'slide-left' : 'slide-right';
+  cardWrap.classList.add(cls);
+  cardWrap.addEventListener('animationend', () => {
+    cardWrap.classList.remove(cls);
+    current = (current + dir + ARTWORKS.length) % ARTWORKS.length;
+    loadArtwork(current);
+  }, { once: true });
+}
+
+function flipCard() {
+  if (!musicReady) return;
+  isFlipped = !isFlipped;
+  card.classList.toggle('flipped', isFlipped);
+}
+
+function playArrow() {
+  arrowSnd.currentTime = 0;
+  arrowSnd.play().catch(() => {});
+}
+
+function startMusic() {
+  if (!musicReady) {
+    musicReady = true;
+    bgMusic.volume = 0.38;
+    bgMusic.play().catch(() => {});
+  }
+}
+
+document.getElementById('btn-left').addEventListener('click',  () => slide(-1));
+document.getElementById('btn-right').addEventListener('click', () => slide(1));
+card.addEventListener('click', flipCard);
+document.addEventListener('click',      startMusic, { once: true });
+document.addEventListener('touchstart', startMusic, { once: true });
+window.addEventListener('resize', applyCardSize);
+
+// Intro: flash (0.9s) → escribe título (2.4s) → espera → desvanece
+setTimeout(() => {
+  intro.classList.add('fade-out');
+  intro.addEventListener('animationend', () => {
+    intro.style.display = 'none';
+  }, { once: true });
+}, 4600);
+
+applyCardSize();
+loadArtwork(0);
+</script>
+</body>
+</html>
