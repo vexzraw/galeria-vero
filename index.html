@@ -144,7 +144,7 @@
       align-items: center;
       padding: 2rem;
       text-align: center;
-      transform: rotateY(180deg); /* ¡Esta es la magia que faltaba! */
+      transform: rotateY(180deg);
     }
 
     .card-back h2 {
@@ -371,9 +371,9 @@ const bgMusic   = document.getElementById('bg-music');
 const arrowSnd  = document.getElementById('arrow-sound');
 const intro     = document.getElementById('intro');
 
-let current    = 0;
-let isFlipped  = false;
-let musicReady = false;
+let current = 0;
+let isFlipped = false;
+let audioStarted = false; // Bandera para asegurarnos de que la música no intente reiniciarse si ya suena
 
 function applyCardSize() {
   const { w, h } = getCardSize();
@@ -406,17 +406,30 @@ function loadArtwork(idx) {
   counter.textContent  = (idx + 1) + ' / ' + ARTWORKS.length;
 }
 
+// NUEVA FUNCION DE MÚSICA LIMPIA Y SEGURA
+function startMusic() {
+  if (!audioStarted || bgMusic.paused) {
+    bgMusic.volume = 1.0;
+    bgMusic.play().then(() => {
+      audioStarted = true;
+    }).catch((err) => {
+      console.warn("Navegador bloqueó el audio, esperando otra interacción.", err);
+    });
+  }
+}
+
 function slide(dir) {
-  // Intentamos iniciar la música cada vez que toquen una flecha
   startMusic(); 
   
-  // Si la tarjeta está volteada, la regresamos al frente antes de cambiar de obra
   if (isFlipped) { 
     isFlipped = false; 
     card.classList.remove('flipped'); 
   }
   
-  playArrow();
+  // Efecto de flecha
+  arrowSnd.currentTime = 0;
+  arrowSnd.play().catch(() => {});
+  
   const cls = dir === -1 ? 'slide-left' : 'slide-right';
   cardWrap.classList.add(cls);
   cardWrap.addEventListener('animationend', () => {
@@ -427,49 +440,27 @@ function slide(dir) {
 }
 
 function flipCard() {
-  // Intentamos iniciar la música cada vez que toquen la tarjeta
   startMusic(); 
-  
   isFlipped = !isFlipped;
   card.classList.toggle('flipped', isFlipped);
-  }
+}
 
-playArrow();
-  const cls = dir === -1 ? 'slide-left' : 'slide-right';
-  cardWrap.classList.add(cls);
-  cardWrap.addEventListener('animationend', () => {
-    cardWrap.classList.remove(cls);
-    current = (current + dir + ARTWORKS.length) % ARTWORKS.length;
-    loadArtwork(current);
-  }, { once: true });
-  }
-
-function startMusic() {
-  // Verificamos si la música está pausada antes de intentar reproducirla
-  if (bgMusic.paused) {
-    bgMusic.volume = 1.0;
-    // Usamos una promesa para saber si el navegador nos dejó reproducirla
-    bgMusic.play().then(() => {
-      musicReady = true;
-    }).catch((err) => {
-      // Si el navegador la bloquea, lo registramos pero no rompemos el código
-      console.warn("Esperando interacción directa para iniciar la música.", err);
-      musicReady = false; 
-    });
-  }
-
-document.getElementById('btn-left').addEventListener('click',  () => slide(-1));
+// EVENTOS DE CLIC
+document.getElementById('btn-left').addEventListener('click', () => slide(-1));
 document.getElementById('btn-right').addEventListener('click', () => slide(1));
 card.addEventListener('click', flipCard);
-document.addEventListener('click',      startMusic, { once: true });
-document.addEventListener('touchstart', startMusic, { once: true });
 window.addEventListener('resize', applyCardSize);
 
-// Intro
+// Asegurar que cualquier primer clic/toque en la página active la música
+document.body.addEventListener('click', startMusic, { once: true });
+document.body.addEventListener('touchstart', startMusic, { once: true });
+
+// DESAPARICIÓN DE LA INTRODUCCIÓN NEGRA
 setTimeout(() => {
   intro.classList.add('fade-out');
 }, 3500);
 
+// INICIALIZACIÓN
 applyCardSize();
 loadArtwork(0);
 </script>
