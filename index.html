@@ -407,7 +407,9 @@ function loadArtwork(idx) {
 }
 
 function slide(dir) {
-  if (!musicReady) return;
+  // Intentamos iniciar la música cada vez que toquen una flecha
+  startMusic(); 
+  
   // Si la tarjeta está volteada, la regresamos al frente antes de cambiar de obra
   if (isFlipped) { 
     isFlipped = false; 
@@ -425,23 +427,36 @@ function slide(dir) {
 }
 
 function flipCard() {
-  if (!musicReady) return;
+  // Intentamos iniciar la música cada vez que toquen la tarjeta
+  startMusic(); 
+  
   isFlipped = !isFlipped;
   card.classList.toggle('flipped', isFlipped);
-}
+  }
 
-function playArrow() {
-  arrowSnd.currentTime = 0;
-  arrowSnd.play().catch(() => {});
-}
+playArrow();
+  const cls = dir === -1 ? 'slide-left' : 'slide-right';
+  cardWrap.classList.add(cls);
+  cardWrap.addEventListener('animationend', () => {
+    cardWrap.classList.remove(cls);
+    current = (current + dir + ARTWORKS.length) % ARTWORKS.length;
+    loadArtwork(current);
+  }, { once: true });
+  }
 
 function startMusic() {
-  if (!musicReady) {
-    musicReady = true;
+  // Verificamos si la música está pausada antes de intentar reproducirla
+  if (bgMusic.paused) {
     bgMusic.volume = 1.0;
-    bgMusic.play().catch(() => {});
+    // Usamos una promesa para saber si el navegador nos dejó reproducirla
+    bgMusic.play().then(() => {
+      musicReady = true;
+    }).catch((err) => {
+      // Si el navegador la bloquea, lo registramos pero no rompemos el código
+      console.warn("Esperando interacción directa para iniciar la música.", err);
+      musicReady = false; 
+    });
   }
-}
 
 document.getElementById('btn-left').addEventListener('click',  () => slide(-1));
 document.getElementById('btn-right').addEventListener('click', () => slide(1));
